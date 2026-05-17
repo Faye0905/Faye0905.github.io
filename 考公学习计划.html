@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>考公学习计划</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #C0392B;
+    --red-light: #FADBD8;
+    --red-mid: #E74C3C;
+    --gold: #D4A017;
+    --gold-light: #FDF3DC;
+    --ink: #1a1a1a;
+    --ink-mid: #4a4a4a;
+    --ink-light: #888;
+    --paper: #FBF8F3;
+    --paper-dark: #F0EBE0;
+    --white: #FFFFFF;
+    --border: #D9CFC0;
+    --green: #27AE60;
+    --green-light: #D5F5E3;
+    --blue: #2471A3;
+    --blue-light: #D6EAF8;
+    --orange: #D35400;
+    --orange-light: #FDEBD0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+  }
+
+  /* ─── 顶部横幅 ─── */
+  .hero {
+    background: var(--ink);
+    color: var(--white);
+    padding: 2.5rem 2rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 60px,
+      rgba(255,255,255,0.02) 60px,
+      rgba(255,255,255,0.02) 61px
+    );
+  }
+  .hero-inner { position: relative; max-width: 960px; margin: 0 auto; }
+  .hero-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .hero-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+  }
+  .hero-title span { color: var(--red-mid); }
+  .hero-sub {
+    margin-top: 0.75rem;
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.05em;
+  }
+
+  /* ─── 今日状态栏 ─── */
+  .today-bar {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .today-bar-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .today-info { display: flex; align-items: center; gap: 1rem; }
+  .today-date { font-size: 13px; color: var(--ink-mid); }
+  .today-phase {
+    background: var(--red);
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 3px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+  }
+  .today-countdown {
+    font-size: 13px;
+    color: var(--ink-light);
+  }
+  .today-countdown strong { color: var(--red); font-weight: 700; }
+  .progress-wrap { display: flex; align-items: center; gap: 8px; }
+  .progress-label { font-size: 12px; color: var(--ink-light); white-space: nowrap; }
+  .progress-bar {
+    width: 160px;
+    height: 6px;
+    background: var(--paper-dark);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--red), var(--gold));
+    border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+  .progress-pct { font-size: 12px; font-weight: 500; color: var(--red); }
+
+  /* ─── 主体布局 ─── */
+  .main { max-width: 960px; margin: 0 auto; padding: 2rem; }
+
+  /* ─── 阶段导航 ─── */
+  .phase-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-bottom: 2rem;
+    scrollbar-width: none;
+  }
+  .phase-nav::-webkit-scrollbar { display: none; }
+  .phase-btn {
+    flex-shrink: 0;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    color: var(--ink-mid);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: 'Noto Sans SC', sans-serif;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .phase-btn:hover { border-color: var(--red); color: var(--red); }
+  .phase-btn.active {
+    background: var(--red);
+    border-color: var(--red);
+    color: white;
+    font-weight: 500;
+  }
+
+  /* ─── 今日任务区 ─── */
+  .section-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::before {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 18px;
+    background: var(--red);
+    border-radius: 2px;
+  }
+
+  .today-tasks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    margin-bottom: 2.5rem;
+  }
+  .task-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    position: relative;
+    transition: box-shadow 0.2s, transform 0.2s;
+    cursor: pointer;
+  }
+  .task-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); transform: translateY(-1px); }
+  .task-card.done { opacity: 0.6; }
+  .task-card.done .task-name { text-decoration: line-through; }
+  .task-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .task-subject {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .tag-data { background: var(--blue-light); color: var(--blue); }
+  .tag-judge { background: var(--orange-light); color: var(--orange); }
+  .tag-verbal { background: var(--green-light); color: var(--green); }
+  .tag-math { background: var(--gold-light); color: var(--gold); }
+  .tag-essay { background: var(--red-light); color: var(--red); }
+  .tag-review { background: var(--paper-dark); color: var(--ink-mid); }
+
+  .task-check {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .task-card.done .task-check {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .task-check::after {
+    content: '✓';
+    font-size: 12px;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .task-card.done .task-check::after { opacity: 1; }
+
+  .task-name { font-size: 15px; font-weight: 500; margin-bottom: 4px; line-height: 1.4; }
+  .task-detail { font-size: 13px; color: var(--ink-light); line-height: 1.5; }
+  .task-time {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--ink-light);
+  }
+  .task-time::before { content: '⏱'; font-size: 11px; }
+
+  /* ─── 阶段详情 ─── */
+  .phase-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 2.5rem; }
+  .phase-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .phase-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+  .phase-card.current { border-color: var(--red); }
+  .phase-card.current .phase-head { background: var(--ink); color: white; }
+  .phase-head {
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--paper-dark);
+    border-bottom: 1px solid var(--border);
+  }
+  .phase-num {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+    min-width: 28px;
+  }
+  .phase-info { flex: 1; }
+  .phase-period { font-size: 16px; font-weight: 500; }
+  .phase-focus { font-size: 13px; opacity: 0.7; margin-top: 2px; }
+  .phase-status {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  .status-done { background: var(--green-light); color: var(--green); }
+  .status-current { background: var(--red); color: white; }
+  .status-upcoming { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.2); }
+  .phase-body { padding: 1.25rem; }
+  .phase-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+  .phase-item {
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--paper);
+    border-left: 3px solid var(--border);
+  }
+  .phase-item.round-1 { border-left-color: var(--blue); }
+  .phase-item.round-2 { border-left-color: var(--gold); }
+  .phase-item-label { font-size: 11px; color: var(--ink-light); margin-bottom: 3px; letter-spacing: 0.05em; }
+  .phase-item-text { font-size: 13px; color: var(--ink-mid); line-height: 1.5; }
+  .phase-daily {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: var(--gold-light);
+    border-radius: 8px;
+    border-left: 3px solid var(--gold);
+  }
+  .phase-daily-label { font-size: 11px; color: var(--gold); font-weight: 500; margin-bottom: 4px; }
+  .phase-daily-text { font-size: 13px; color: var(--ink-mid); line-height: 1.6; }
+
+  /* ─── 考试时间线 ─── */
+  .exam-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 2.5rem;
+  }
+  .exam-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    transition: all 0.2s;
+  }
+  .exam-card:hover { border-color: var(--red); box-shadow: 0 2px 12px rgba(192,57,43,0.1); }
+  .exam-name { font-size: 14px; font-weight: 500; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .exam-name::before { content: '📋'; font-size: 13px; }
+  .exam-row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; border-bottom: 1px solid var(--paper-dark); }
+  .exam-row:last-child { border-bottom: none; }
+  .exam-key { color: var(--ink-light); }
+  .exam-val { color: var(--ink-mid); font-weight: 500; }
+  .exam-val.exam-date { color: var(--red); }
+
+  /* ─── 贴士 ─── */
+  .tips-box {
+    background: var(--gold-light);
+    border: 1px solid #E8D08A;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 2rem;
+  }
+  .tips-title { font-size: 14px; font-weight: 500; color: var(--gold); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .tips-title::before { content: '💡'; }
+  .tips-list { display: flex; flex-direction: column; gap: 6px; }
+  .tip-item { font-size: 13px; color: var(--ink-mid); padding-left: 16px; position: relative; line-height: 1.6; }
+  .tip-item::before { content: '·'; position: absolute; left: 4px; color: var(--gold); font-size: 16px; line-height: 1.4; }
+
+  /* ─── 底部 ─── */
+  footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 12px;
+    color: var(--ink-light);
+    border-top: 1px solid var(--border);
+    letter-spacing: 0.05em;
+  }
+
+  @media (max-width: 600px) {
+    .hero { padding: 1.5rem 1rem; }
+    .main { padding: 1.25rem 1rem; }
+    .today-bar { padding: 0.75rem 1rem; }
+    .progress-bar { width: 100px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 顶部横幅 -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-label">2024 公务员备考计划</div>
+    <h1 class="hero-title">考公<span>学习</span>日历</h1>
+    <p class="hero-sub">行测 · 申论 · 4月中旬 → 10月底</p>
+  </div>
+</div>
+
+<!-- 粘性状态栏 -->
+<div class="today-bar">
+  <div class="today-bar-inner">
+    <div class="today-info">
+      <span class="today-date" id="todayDate">加载中…</span>
+      <span class="today-phase" id="todayPhase">─</span>
+    </div>
+    <div class="today-countdown" id="nextExam">─</div>
+    <div class="progress-wrap">
+      <span class="progress-label">总进度</span>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <span class="progress-pct" id="progressPct">0%</span>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- 今日任务 -->
+  <h2 class="section-title">今日任务</h2>
+  <div class="today-tasks" id="todayTasks">
+    <!-- JS 动态填充 -->
+  </div>
+
+  <!-- 备考阶段 -->
+  <h2 class="section-title">备考阶段</h2>
+  <div class="phase-nav" id="phaseNav">
+    <button class="phase-btn active" onclick="filterPhase('all')">全部阶段</button>
+    <button class="phase-btn" onclick="filterPhase('4-5')">4–5月·资料分析</button>
+    <button class="phase-btn" onclick="filterPhase('5-6')">5–6月·判断推理</button>
+    <button class="phase-btn" onclick="filterPhase('6-7')">6–7月·言语</button>
+    <button class="phase-btn" onclick="filterPhase('7-8')">7–8月·数量</button>
+    <button class="phase-btn" onclick="filterPhase('8-9')">8–9月·行测拔高</button>
+    <button class="phase-btn" onclick="filterPhase('9-10')">9–10月·申论</button>
+    <button class="phase-btn" onclick="filterPhase('10-11')">10–11月·套题冲刺</button>
+  </div>
+
+  <div class="phase-list" id="phaseList"></div>
+
+  <!-- 考试时间线 -->
+  <h2 class="section-title">考试时间线</h2>
+  <div class="exam-grid">
+    <div class="exam-card">
+      <div class="exam-name">北京选调</div>
+      <div class="exam-row"><span class="exam-key">报名</span><span class="exam-val">9月22–26日</span></div>
+      <div class="exam-row"><span class="exam-key">考试</span><span class="exam-val exam-date">10月19日</span></div>
+    </div>
+    <div class="exam-card">
+      <div class="exam-name">山东选调（第一批）</div>
+      <div class="exam-row"><span class="exam-key">公告</span><span class="exam-val">9月29日</span></div>
+      <div class="exam-row"><span class="exam-key">报名</span><span class="exam-val">10月9–17日</span></div>
+      <div class="exam-row"><span class="exam-key">考试</span><span class="exam-val exam-date">10月27日</span></div>
+    </div>
+    <div class="exam-card">
+      <div class="exam-name">湖南选调</div>
+      <div class="exam-row"><span class="exam-key">公告</span><span class="exam-val">10月17日</span></div>
+      <div class="exam-row"><span class="exam-key">报名</span><span class="exam-val">10月10–24日</span></div>
+      <div class="exam-row"><span class="exam-key">考试</span><span class="exam-val exam-date">11月16日</span></div>
+    </div>
+    <div class="exam-card">
+      <div class="exam-name">江苏</div>
+      <div class="exam-row"><span class="exam-key">公告</span><span class="exam-val">10月14日</span></div>
+      <div class="exam-row"><span class="exam-key">报名</span><span class="exam-val">10月27日–11月3日</span></div>
+      <div class="exam-row"><span class="exam-key">考试</span><span class="exam-val exam-date">11月15日</span></div>
+    </div>
+    <div class="exam-card">
+      <div class="exam-name">山东选调（第二批）</div>
+      <div class="exam-row"><span class="exam-key">报名</span><span class="exam-val">11月11–15日</span></div>
+      <div class="exam-row"><span class="exam-key">考试</span><span class="exam-val exam-date">12月7日</span></div>
+    </div>
+    <div class="exam-card">
+      <div class="exam-name">天津</div>
+      <div class="exam-row"><span class="exam-key">报名</span><span class="exam-val">11月12–16日</span></div>
+      <div class="exam-row"><span class="exam-key">考试</span><span class="exam-val exam-date">12月6日</span></div>
+    </div>
+    <div class="exam-card">
+      <div class="exam-name">广东选调</div>
+      <div class="exam-row"><span class="exam-key">报名</span><span class="exam-val">12月4–8日</span></div>
+      <div class="exam-row"><span class="exam-key">考试</span><span class="exam-val exam-date">12月28日</span></div>
+    </div>
+    <div class="exam-card">
+      <div class="exam-name">浙江</div>
+      <div class="exam-row"><span class="exam-key">报名</span><span class="exam-val">10月11–19日</span></div>
+      <div class="exam-row"><span class="exam-key">考试</span><span class="exam-val exam-date">待公告</span></div>
+    </div>
+  </div>
+
+  <!-- 贴士 -->
+  <div class="tips-box">
+    <div class="tips-title">备考提示</div>
+    <div class="tips-list">
+      <div class="tip-item">题型滚动复习——学到后面的模块时，适时通过刷题复习前面的题型，保持手感。</div>
+      <div class="tip-item">5月底前确定好最终报考框架（岗位方向、省份）。</div>
+      <div class="tip-item">8月前将申论大作文初稿写出来，留足修改时间。</div>
+      <div class="tip-item">资料分析：高照老师适合数学弱的同学，花生老师思维敏捷但要求较高，二者可以结合使用。</div>
+      <div class="tip-item">言语 & 类比推荐做题中学，不必过度依赖听课，多刷真题效果更好。</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>加油！上岸必成 🎯</footer>
+
+<script>
+// ─── 数据 ───
+const phases = [
+  {
+    id: '4-5',
+    period: '4–5月',
+    focus: '资料分析',
+    startMonth: 4, endMonth: 5,
+    rounds: [
+      { label: '一轮教材', text: '高照3+2（每天一节，约3h×16天）' },
+      { label: '二轮刷题', text: '夸夸刷 / 超大杯，对应章节题目（时间充足可看解析课）' }
+    ],
+    daily: '每天1节视频课 + 对应章节练习题',
+    color: 'blue'
+  },
+  {
+    id: '5-6',
+    period: '5–6月',
+    focus: '判断推理（图推·逻辑·定义·类比）',
+    startMonth: 5, endMonth: 6,
+    rounds: [
+      { label: '逻辑', text: '花生逻辑（3h×14天），建议先听花生试试看' },
+      { label: '图推/定义/类比', text: '花生系列（可参考龙飞图推、聂佳类比）' }
+    ],
+    daily: '听课后刷5000题对应内容',
+    color: 'orange'
+  },
+  {
+    id: '6-7',
+    period: '6–7月',
+    focus: '言语理解',
+    startMonth: 6, endMonth: 7,
+    rounds: [
+      { label: '一轮', text: '郭熙系统课（1h×10，适合小白）+ 言语100题' },
+      { label: '二轮', text: '红领巾题本 + 国省考真题（做题中学，不推荐过度听课）' }
+    ],
+    daily: '听课后刷20道左右对应题（5000题），积累选词填空词汇',
+    color: 'green'
+  },
+  {
+    id: '7-8',
+    period: '7–8月',
+    focus: '数量关系',
+    startMonth: 7, endMonth: 8,
+    rounds: [
+      { label: '系统课', text: '花生数量（跟课学习）' },
+      { label: '配套练习', text: '课后对应题型练习' }
+    ],
+    daily: '跟课学习 + 课后题巩固',
+    color: 'gold'
+  },
+  {
+    id: '8-9',
+    period: '8–9月',
+    focus: '行测模块拔高',
+    startMonth: 8, endMonth: 9,
+    rounds: [
+      { label: '资料分析', text: '花生1200题（每天4篇/30min，正确率争取≥80%）；高照超大杯' },
+      { label: '判断推理', text: '龙大百大图形（出题者视角）；逻辑600题（放平心态）；定义：文体大佬笔记；类比：刷题为主' },
+      { label: '言语', text: '大懒猫B站复盘' },
+      { label: '数量', text: '高照：听课+做题' }
+    ],
+    daily: '资料30分钟 + 各模块专项刷题 + 复盘错题',
+    color: 'red'
+  },
+  {
+    id: '9-10',
+    period: '9–10月',
+    focus: '申论基础',
+    startMonth: 9, endMonth: 10,
+    rounds: [
+      { label: '小题', text: '白鹭（分析题干思路）：每天归纳概括 + 公文写作' },
+      { label: '大作文', text: '袁东大作文：每周模拟一篇大作文（白鹭补充）' }
+    ],
+    daily: '每天：归纳概括 + 公文写作 1题；每周：完整大作文1篇',
+    color: 'red'
+  },
+  {
+    id: '10-11',
+    period: '10–11月',
+    focus: '大量套题 + 线上模考冲刺',
+    startMonth: 10, endMonth: 11,
+    rounds: [
+      { label: '模考套题', text: '大量全真模拟，严格计时' },
+      { label: '线上模考', text: '参加线上模考，熟悉考场节奏和状态' }
+    ],
+    daily: '每天1套行测（限时）+ 申论1题，认真复盘',
+    color: 'red'
+  }
+];
+
+const taskTemplates = {
+  '4-5': [
+    { name: '资料分析视频课', detail: '高照3+2 — 今日1节', time: '约3小时', tag: 'tag-data', tagName: '资料分析' },
+    { name: '对应章节练习题', detail: '课后配套刷题，夸夸刷/超大杯', time: '约1小时', tag: 'tag-data', tagName: '资料分析' }
+  ],
+  '5-6': [
+    { name: '逻辑推理听课', detail: '花生逻辑系列，今日1节', time: '约3小时', tag: 'tag-judge', tagName: '判断推理' },
+    { name: '5000题·判断推理', detail: '对应图推/逻辑/定义/类比刷题', time: '约1小时', tag: 'tag-judge', tagName: '判断推理' }
+  ],
+  '6-7': [
+    { name: '言语理解听课', detail: '郭熙系统课，今日1节（约1h）', time: '约1小时', tag: 'tag-verbal', tagName: '言语' },
+    { name: '5000题·言语', detail: '课后刷20道对应题，积累词汇', time: '约30分钟', tag: 'tag-verbal', tagName: '言语' },
+    { name: '积累选词填空词汇', detail: '可参考花生700词', time: '约20分钟', tag: 'tag-verbal', tagName: '言语' }
+  ],
+  '7-8': [
+    { name: '数量关系听课', detail: '花生数量课，今日1节', time: '约2小时', tag: 'tag-math', tagName: '数量' },
+    { name: '数量课后练习', detail: '巩固今日所学题型', time: '约1小时', tag: 'tag-math', tagName: '数量' }
+  ],
+  '8-9': [
+    { name: '资料分析4篇', detail: '花生1200题，计时30分钟，争取≥80%', time: '30分钟', tag: 'tag-data', tagName: '资料分析' },
+    { name: '图推专项', detail: '龙大百大图形（出题者视角）', time: '约40分钟', tag: 'tag-judge', tagName: '判断推理' },
+    { name: '言语复盘', detail: '大懒猫B站复盘今日错题', time: '约30分钟', tag: 'tag-verbal', tagName: '言语' },
+    { name: '数量专项', detail: '高照数量：听课+做题', time: '约1小时', tag: 'tag-math', tagName: '数量' }
+  ],
+  '9-10': [
+    { name: '归纳概括练习', detail: '白鹭教材，今日1题精析', time: '约40分钟', tag: 'tag-essay', tagName: '申论' },
+    { name: '公文写作练习', detail: '每天1道公文题', time: '约30分钟', tag: 'tag-essay', tagName: '申论' },
+    { name: '大作文（每周）', detail: '袁东框架，本周完成1篇完整大作文', time: '约2小时', tag: 'tag-essay', tagName: '申论' }
+  ],
+  '10-11': [
+    { name: '全套行测模考', detail: '限时120分钟，严格模拟考场', time: '2小时', tag: 'tag-review', tagName: '模考冲刺' },
+    { name: '申论完整作答', detail: '申论全套练习，计时180分钟', time: '3小时', tag: 'tag-essay', tagName: '申论' },
+    { name: '错题复盘', detail: '认真分析错题，归纳薄弱项', time: '约40分钟', tag: 'tag-review', tagName: '复盘' }
+  ]
+};
+
+// ─── 工具函数 ───
+function getCurrentPhaseId() {
+  const now = new Date();
+  const m = now.getMonth() + 1;
+  if (m >= 4 && m <= 5) return '4-5';
+  if (m >= 5 && m <= 6) return '5-6';
+  if (m >= 6 && m <= 7) return '6-7';
+  if (m >= 7 && m <= 8) return '7-8';
+  if (m >= 8 && m <= 9) return '8-9';
+  if (m >= 9 && m <= 10) return '9-10';
+  if (m >= 10 && m <= 11) return '10-11';
+  return null;
+}
+
+function getPhaseStatus(phase) {
+  const now = new Date();
+  const m = now.getMonth() + 1;
+  const [s, e] = phase.id.split('-').map(Number);
+  if (m > e) return 'done';
+  if (m >= s && m <= e) return 'current';
+  return 'upcoming';
+}
+
+function getPhaseName(id) {
+  const map = {
+    '4-5': '资料分析阶段',
+    '5-6': '判断推理阶段',
+    '6-7': '言语理解阶段',
+    '7-8': '数量关系阶段',
+    '8-9': '行测拔高阶段',
+    '9-10': '申论基础阶段',
+    '10-11': '冲刺模考阶段'
+  };
+  return map[id] || '备考中';
+}
+
+// ─── 今日任务 ───
+function renderTodayTasks() {
+  const phaseId = getCurrentPhaseId();
+  const container = document.getElementById('todayTasks');
+  const tasks = phaseId ? taskTemplates[phaseId] : [];
+
+  if (!tasks || tasks.length === 0) {
+    container.innerHTML = '<p style="color:var(--ink-light);font-size:14px;">当前不在备考期间，请调整计划或提前准备！</p>';
+    return;
+  }
+
+  const saved = JSON.parse(localStorage.getItem('doneToday') || '{}');
+  const today = new Date().toDateString();
+
+  container.innerHTML = tasks.map((t, i) => {
+    const key = today + '_' + i;
+    const done = saved[key] ? 'done' : '';
+    return `
+      <div class="task-card ${done}" onclick="toggleTask(this, '${key}')">
+        <div class="task-top">
+          <span class="task-subject ${t.tag}">${t.tagName}</span>
+          <div class="task-check"></div>
+        </div>
+        <div class="task-name">${t.name}</div>
+        <div class="task-detail">${t.detail}</div>
+        <div class="task-time">${t.time}</div>
+      </div>`;
+  }).join('');
+}
+
+function toggleTask(card, key) {
+  card.classList.toggle('done');
+  const saved = JSON.parse(localStorage.getItem('doneToday') || '{}');
+  if (card.classList.contains('done')) {
+    saved[key] = true;
+  } else {
+    delete saved[key];
+  }
+  localStorage.setItem('doneToday', JSON.stringify(saved));
+  updateProgress();
+}
+
+// ─── 阶段列表 ───
+let currentFilter = 'all';
+function filterPhase(id) {
+  currentFilter = id;
+  document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderPhaseList();
+}
+
+function renderPhaseList() {
+  const container = document.getElementById('phaseList');
+  const filtered = currentFilter === 'all' ? phases : phases.filter(p => p.id === currentFilter);
+  const statusLabel = { done: '已完成', current: '进行中', upcoming: '即将开始' };
+  const statusClass = { done: 'status-done', current: 'status-current', upcoming: 'status-upcoming' };
+
+  container.innerHTML = filtered.map(p => {
+    const st = getPhaseStatus(p);
+    const isCurrent = st === 'current';
+    const roundsHtml = p.rounds.map((r, i) =>
+      `<div class="phase-item round-${i + 1}">
+        <div class="phase-item-label">${r.label}</div>
+        <div class="phase-item-text">${r.text}</div>
+      </div>`
+    ).join('');
+
+    return `
+      <div class="phase-card ${isCurrent ? 'current' : ''}" id="phase-${p.id}">
+        <div class="phase-head">
+          <div class="phase-num">${p.period.replace('–', '—')}</div>
+          <div class="phase-info">
+            <div class="phase-period">${p.focus}</div>
+          </div>
+          <span class="phase-status ${statusClass[st]}">${statusLabel[st]}</span>
+        </div>
+        <div class="phase-body">
+          <div class="phase-items">${roundsHtml}</div>
+          <div class="phase-daily">
+            <div class="phase-daily-label">每日计划</div>
+            <div class="phase-daily-text">${p.daily}</div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ─── 状态栏 ───
+function updateStatusBar() {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+  document.getElementById('todayDate').textContent = dateStr;
+
+  const phaseId = getCurrentPhaseId();
+  document.getElementById('todayPhase').textContent = phaseId ? getPhaseName(phaseId) : '备考期外';
+
+  // 最近考试倒计时（固定最近的）
+  const exams = [
+    { name: '山东选调①', date: new Date('2024-10-27') },
+    { name: '北京选调', date: new Date('2024-10-19') },
+    { name: '江苏', date: new Date('2024-11-15') },
+    { name: '湖南选调', date: new Date('2024-11-16') },
+    { name: '天津', date: new Date('2024-12-06') },
+    { name: '山东选调②', date: new Date('2024-12-07') },
+    { name: '广东选调', date: new Date('2024-12-28') },
+  ];
+  const upcoming = exams.filter(e => e.date > now).sort((a, b) => a.date - b.date);
+  if (upcoming.length > 0) {
+    const next = upcoming[0];
+    const days = Math.ceil((next.date - now) / 86400000);
+    document.getElementById('nextExam').innerHTML = `距 <strong>${next.name}</strong> 还有 <strong>${days}</strong> 天`;
+  }
+
+  updateProgress();
+}
+
+function updateProgress() {
+  const start = new Date('2024-04-15');
+  const end = new Date('2024-10-31');
+  const now = new Date();
+  const total = end - start;
+  const elapsed = Math.min(Math.max(now - start, 0), total);
+  const pct = Math.round(elapsed / total * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+}
+
+// ─── 初始化 ───
+updateStatusBar();
+renderTodayTasks();
+renderPhaseList();
+</script>
+</body>
+</html>
